@@ -951,6 +951,8 @@ class MUIDataTable extends React.Component {
     let isFiltered = false;
     let isSearchFound = false;
     let displayRow = [];
+    const { customSearch } = props.options;
+
 
     for (let index = 0; index < row.length; index++) {
       let columnDisplay = row[index];
@@ -1002,7 +1004,7 @@ class MUIDataTable extends React.Component {
       if (filterVal.length || filterType === 'custom') {
         if (column.filterOptions && column.filterOptions.logic) {
           if (column.filterOptions.logic(columnValue, filterVal, row)) isFiltered = true;
-        } else if (filterType === 'textField' && !this.hasSearchText(columnVal, filterVal, caseSensitive)) {
+        } else if (!customSearch && filterType === 'textField' && !this.hasSearchText(columnVal, filterVal, caseSensitive)) {
           isFiltered = true;
         } else if (
           filterType !== 'textField' &&
@@ -1032,7 +1034,7 @@ class MUIDataTable extends React.Component {
         }
       }
 
-      if (
+      if (!customSearch &&
         searchText &&
         column.display !== 'excluded' &&
         this.hasSearchText(columnVal, searchText, caseSensitive) &&
@@ -1043,7 +1045,6 @@ class MUIDataTable extends React.Component {
       }
     }
 
-    const { customSearch } = props.options;
 
     if (searchText && customSearch) {
       const customSearchResult = customSearch(searchText, row, columns);
