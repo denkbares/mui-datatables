@@ -1142,7 +1142,7 @@ class MUIDataTable extends React.Component {
   getDisplayData(columns, data, filterList, searchText, tableMeta, props) {
     let newRows = [];
     const dataForTableMeta = tableMeta ? tableMeta.tableData : props.data;
-    const date = new Date();
+
     for (let index = 0; index < data.length; index++) {
       const value = data[index].data;
       const displayRow = this.computeDisplayRow(
@@ -1164,8 +1164,6 @@ class MUIDataTable extends React.Component {
         });
       }
     }
-    const endDate = new Date();
-    console.log(endDate.getTime() - date.getTime());
     return newRows;
   }
 
