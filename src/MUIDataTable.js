@@ -1047,7 +1047,7 @@ class MUIDataTable extends React.Component {
 
 
     if (searchText && customSearch) {
-      const customSearchResult = customSearch(searchText, row, columns);
+      const customSearchResult = customSearch(searchText, row, columns, rowIndex);
       if (typeof customSearchResult !== 'boolean') {
         console.error('customSearch must return a boolean');
       } else {
