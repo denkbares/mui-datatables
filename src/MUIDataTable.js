@@ -1047,7 +1047,7 @@ class MUIDataTable extends React.Component {
 
 
     if (searchText && customSearch) {
-      const customSearchResult = customSearch(searchText, row, columns, rowIndex);
+      const customSearchResult = customSearch(searchText, row, columns);
       if (typeof customSearchResult !== 'boolean') {
         console.error('customSearch must return a boolean');
       } else {
@@ -1142,7 +1142,7 @@ class MUIDataTable extends React.Component {
   getDisplayData(columns, data, filterList, searchText, tableMeta, props) {
     let newRows = [];
     const dataForTableMeta = tableMeta ? tableMeta.tableData : props.data;
-    const date = new Date();
+
     for (let index = 0; index < data.length; index++) {
       const value = data[index].data;
       const {displayRow, visible} = this.computeDisplayRow(
@@ -1172,10 +1172,7 @@ class MUIDataTable extends React.Component {
     newRows = customRowTransform?.(newRows) ?? newRows;
 
     // strip unneccessary information
-    newRows = newRows.filter(row => row.visible).map(row => {return { data: row.data, dataIndex: row.dataIndex }});
-    const endDate = new Date();
-    console.log(endDate.getTime() - date.getTime());
-    return newRows;
+    return newRows.filter(row => row.visible).map(row => {return { data: row.data, dataIndex: row.dataIndex }});
   }
 
   toggleViewColumn = index => {
