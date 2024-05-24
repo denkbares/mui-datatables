@@ -1160,7 +1160,7 @@ class MUIDataTable extends React.Component {
       if (displayRow) {
         newRows.push({
           data: displayRow,
-          value: value,
+          rowData: value,
           dataIndex: data[index].index,
           visible: visible,
         });
