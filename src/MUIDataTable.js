@@ -1047,7 +1047,7 @@ class MUIDataTable extends React.Component {
 
 
     if (searchText && customSearch) {
-      const customSearchResult = customSearch(searchText, row, columns);
+      const customSearchResult = customSearch(searchText, row, columns, rowIndex);
       if (typeof customSearchResult !== 'boolean') {
         console.error('customSearch must return a boolean');
       } else {
@@ -1060,11 +1060,11 @@ class MUIDataTable extends React.Component {
         console.warn('Server-side filtering is enabled, hence custom search will be ignored.');
       }
 
-      return displayRow;
+      return {displayRow, visible: true};
     }
 
-    if (isFiltered || (searchText && !isSearchFound)) return null;
-    else return displayRow;
+    if (isFiltered || (searchText && !isSearchFound)) return {displayRow, visible: false};
+    else return {displayRow, visible: true};
   }
 
   hasSearchText = (toSearch, toFind, caseSensitive) => {
@@ -1142,10 +1142,10 @@ class MUIDataTable extends React.Component {
   getDisplayData(columns, data, filterList, searchText, tableMeta, props) {
     let newRows = [];
     const dataForTableMeta = tableMeta ? tableMeta.tableData : props.data;
-
+    const date = new Date();
     for (let index = 0; index < data.length; index++) {
       const value = data[index].data;
-      const displayRow = this.computeDisplayRow(
+      const {displayRow, visible} = this.computeDisplayRow(
         columns,
         value,
         index,
@@ -1160,10 +1160,21 @@ class MUIDataTable extends React.Component {
       if (displayRow) {
         newRows.push({
           data: displayRow,
+          value: value,
           dataIndex: data[index].index,
+          visible: visible,
         });
       }
     }
+
+    // apply custom transformation to rows
+    const { customRowTransform } = props?.options;
+    newRows = customRowTransform?.(newRows) ?? newRows;
+
+    // strip unneccessary information
+    newRows = newRows.filter(row => row.visible).map(row => {return { data: row.data, dataIndex: row.dataIndex }});
+    const endDate = new Date();
+    console.log(endDate.getTime() - date.getTime());
     return newRows;
   }
 
