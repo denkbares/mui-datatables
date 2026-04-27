@@ -49,11 +49,10 @@ const TableSearch = ({ options, searchText, onSearch, onHide }) => {
           className={classes.searchText}
           autoFocus={true}
           variant={'standard'}
-          InputProps={{
-            'data-test-id': options.textLabels.toolbar.search,
-          }}
-          inputProps={{
-            'aria-label': options.textLabels.toolbar.search,
+          slotProps={{
+            input: {
+              'data-test-id': options.textLabels.toolbar.search,
+            },
           }}
           value={searchText || ''}
           onKeyDown={onKeyDown}

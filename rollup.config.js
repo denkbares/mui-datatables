@@ -5,6 +5,27 @@ import uglify from '@lopatnov/rollup-plugin-uglify';
 
 export default {
   input: 'src/index.js',
+  external: [
+    'react',
+    'react-dom',
+    'react/jsx-runtime',
+    '@mui/material',
+    '@mui/icons-material',
+    '@mui/system',
+    '@emotion/react',
+    '@emotion/styled',
+    /^@mui\//,
+    /^@emotion\//,
+    'prop-types',
+    'clsx',
+    'react-to-print',
+    'react-dnd',
+    'react-dnd-html5-backend',
+    'tss-react',
+    'tss-react/mui',
+    /^lodash\./,
+    /^@babel\/runtime/,
+  ],
   plugins: [
     replace({
       'process.env.NODE_ENV': JSON.stringify('production'),
