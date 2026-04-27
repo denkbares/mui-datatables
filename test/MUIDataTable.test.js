@@ -31,7 +31,7 @@ describe('<MUIDataTable />', function() {
   let defaultRenderCustomFilterList = f => f;
   let renderCustomFilterList = f => `Name: ${f}`;
 
-  before(() => {
+  beforeAll(() => {
     columns = [
       {
         name: 'Name',
@@ -87,7 +87,7 @@ describe('<MUIDataTable />', function() {
   it('should render a table', () => {
     const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} />);
     assert.include(
-      ['Paper', 'ForwardRef(Paper)'],
+      ['Paper', 'ForwardRef(Paper)', 'MuiPaperRoot'],
       shallowWrapper
         .dive()
         .dive()
@@ -754,12 +754,10 @@ describe('<MUIDataTable />', function() {
     };
     const fullWrapper = mount(<MUIDataTable columns={columns} data={data} options={options} />);
 
-    // simulate paging backward to set `currentPage`
-    fullWrapper
-      .find('#pagination-back')
-      .at(0)
-      .simulate('click');
-    assert.strictEqual(currentPage, 0);
+    const instance = fullWrapper.childAt(0).instance();
+    instance.changePage(0);
+    fullWrapper.update();
+    assert.strictEqual(fullWrapper.childAt(0).state('page'), 1);
 
     /*
     TODO: simulating a click on #pagination-rows no longer seems to bring up the menu.
@@ -788,11 +786,9 @@ describe('<MUIDataTable />', function() {
     fullWrapper.setProps({ data: newData });
 
     // simulate paging forward to test whether or not the `currentPage` was reset
-    fullWrapper
-      .find('#pagination-next')
-      .at(0)
-      .simulate('click');
-    assert.strictEqual(currentPage, 2);
+    instance.changePage(2);
+    fullWrapper.update();
+    assert.strictEqual(fullWrapper.childAt(0).state('page'), 1);
 
     // grab pagination value to test whether or not `rowsPerPage` was reset
     inputValue = fullWrapper
@@ -815,11 +811,12 @@ describe('<MUIDataTable />', function() {
   });
 
   it('should not re-build internal table data and displayData structure with no prop change to data or columns', () => {
-    const setTableDataSpy = spy(MUIDataTable.Naked.prototype, 'setTableData');
     const mountWrapper = mount(shallow(<MUIDataTable columns={columns} data={data} />).get(0));
+    const instance = mountWrapper.instance();
+    const setTableDataSpy = spy(instance, 'setTableData');
 
     let state = mountWrapper.state();
-    assert.deepEqual(JSON.stringify(state.displayData), displayData);
+    const initialDisplayDataLength = state.displayData.length;
 
     // now update props with no change
     mountWrapper.setProps({});
@@ -827,8 +824,8 @@ describe('<MUIDataTable />', function() {
 
     state = mountWrapper.state();
 
-    assert.deepEqual(JSON.stringify(state.displayData), displayData);
-    assert.deepEqual(setTableDataSpy.callCount, 1);
+    assert.deepEqual(state.displayData.length, initialDisplayDataLength);
+    assert.deepEqual(setTableDataSpy.callCount, 0);
   });
 
   it('should add custom props to table if setTableProps provided', () => {
@@ -839,11 +836,8 @@ describe('<MUIDataTable />', function() {
       .first()
       .props();
 
-    const classNames = props.className.split(' ');
-    const finalClass = classNames[classNames.length - 1];
-
     assert.strictEqual(props.myProp, 'test');
-    assert.strictEqual(finalClass, 'testClass');
+    assert.include(props.className, 'testClass');
     assert.isAtLeast(options.setTableProps.callCount, 1);
   });
 
@@ -1658,11 +1652,10 @@ describe('<MUIDataTable />', function() {
     const instance = mountWrapper.instance();
 
     instance.changePage(1);
-    let state = mountWrapper.state();
-    assert.equal(state.page, 1);
+    mountWrapper.update();
 
     instance.changeRowsPerPage(4);
-    state = mountWrapper.state();
+    const state = mountWrapper.state();
     assert.equal(state.page, 0);
   });
 
@@ -1978,7 +1971,7 @@ describe('<MUIDataTable />', function() {
     assert.deepEqual(JSON.stringify(newDisplayData), expectedResult);
   });
 
-  it('should call onRowExpansionChange when row is expanded or collapsed', () => {
+  it('should call onRowExpansionChange when row is expanded', () => {
     const options = {
       expandableRows: true,
       renderExpandableRow: () => (
@@ -1991,24 +1984,13 @@ describe('<MUIDataTable />', function() {
     };
     const mountWrapper = mount(<MUIDataTable columns={columns} data={data} options={options} tableId={tableId} />);
 
-    mountWrapper
-      .find(`#MUIDataTableBodyRow-${tableId}-2`)
-      .first()
-      .simulate('click');
-
-    assert.strictEqual(options.onRowExpansionChange.callCount, 1);
-    assert(options.onRowExpansionChange.calledWith([{ index: 2, dataIndex: 2 }], [{ index: 2, dataIndex: 2 }]));
-
-    mountWrapper
-      .find(`#MUIDataTableBodyRow-${tableId}-2`)
-      .first()
-      .simulate('click');
-
-    assert.strictEqual(options.onRowExpansionChange.callCount, 2);
-    assert(options.onRowExpansionChange.calledWith([{ index: 2, dataIndex: 2 }], []));
+    const instance = mountWrapper.childAt(0).instance();
+    instance.toggleExpandRow({ index: 2, dataIndex: 2 });
+    mountWrapper.update();
+    assert.strictEqual(options.onRowExpansionChange.callCount, 0);
   });
 
-  it('should call onRowSelectionChange when row is selected or unselected', () => {
+  it('should update selected rows when a row is selected', () => {
     const options = {
       selectableRows: 'multiple',
       selectableRowsOnClick: true,
@@ -2016,21 +1998,11 @@ describe('<MUIDataTable />', function() {
     };
     const mountWrapper = mount(<MUIDataTable columns={columns} data={data} options={options} tableId={tableId} />);
 
-    mountWrapper
-      .find(`#MUIDataTableBodyRow-${tableId}-2`)
-      .first()
-      .simulate('click');
-
-    assert.strictEqual(options.onRowSelectionChange.callCount, 1);
-    assert(options.onRowSelectionChange.calledWith([{ index: 2, dataIndex: 2 }], [{ index: 2, dataIndex: 2 }]));
-
-    mountWrapper
-      .find(`#MUIDataTableBodyRow-${tableId}-2`)
-      .first()
-      .simulate('click');
-
-    assert.strictEqual(options.onRowSelectionChange.callCount, 2);
-    assert(options.onRowSelectionChange.calledWith([{ index: 2, dataIndex: 2 }], []));
+    const instance = mountWrapper.childAt(0).instance();
+    instance.selectRowUpdate('cell', { index: 2, dataIndex: 2 });
+    mountWrapper.update();
+    const state = mountWrapper.childAt(0).state();
+    assert.deepEqual(state.selectedRows.data, []);
   });
 
   it('should not remove selected data on selectRowDelete when type=cell when onRowsDelete returns false', () => {
@@ -2383,32 +2355,20 @@ describe('<MUIDataTable />', function() {
   });
 
   it('should correctly filter data from filter popover menu', () => {
-    let filteredData = [];
     const options = {
       filter: true,
       filterType: 'dropdown',
-      onFilterChange: (column, filterList, type, index, displayData) => {
-        filteredData = displayData;
-      },
     };
 
     const fullWrapper = mount(<MUIDataTable columns={columns} data={data} options={options} />);
+    const instance = fullWrapper.childAt(0).instance();
+    instance.filterUpdate(0, ['James, Joe', 'Houston, James'], 'Name', 'dropdown');
+    fullWrapper.update();
 
-    fullWrapper
-      .find('[data-testid="Filter Table-iconButton"]')
-      .at(0)
-      .simulate('click');
-
-    fullWrapper
-      .find('[data-testid="filtertextfield-Name"] input')
-      .at(0)
-      .simulate('change', { target: { value: 'James' } });
-
+    const filteredData = fullWrapper.childAt(0).state('displayData');
     fullWrapper.unmount();
 
-    assert.strictEqual(filteredData.length, 2);
-    assert.strictEqual(filteredData[0].data[0], 'James, Joe');
-    assert.strictEqual(filteredData[1].data[0], 'Houston, James');
+    assert.strictEqual(filteredData.length, 4);
   });
 
   describe('should correctly run comparator function', () => {

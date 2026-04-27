@@ -1,9 +1,5 @@
 import React from 'react';
-import simulant from 'simulant';
-import { spy, stub } from 'sinon';
-import { mount, shallow } from 'enzyme';
-import { assert, expect, should } from 'chai';
-import TextField from '@mui/material/TextField';
+import { render, screen, fireEvent } from '@testing-library/react';
 import TableSearch from '../src/components/TableSearch';
 import getTextLabels from '../src/textLabels';
 
@@ -13,10 +9,9 @@ describe('<TableSearch />', function() {
     const onSearch = () => {};
     const onHide = () => {};
 
-    const mountWrapper = mount(<TableSearch onSearch={onSearch} onHide={onHide} options={options} />);
+    render(<TableSearch onSearch={onSearch} onHide={onHide} options={options} />);
 
-    const actualResult = mountWrapper.find(TextField);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
   it('should render a search bar with text initialized', () => {
@@ -24,12 +19,10 @@ describe('<TableSearch />', function() {
     const onSearch = () => {};
     const onHide = () => {};
 
-    const mountWrapper = mount(
+    render(
       <TableSearch onSearch={onSearch} onHide={onHide} options={options} searchText="searchText" />,
     );
-    const actualResult = mountWrapper.find(TextField);
-    assert.strictEqual(actualResult.length, 1);
-    assert.strictEqual(actualResult.props().value, 'searchText');
+    expect(screen.getByDisplayValue('searchText')).toBeInTheDocument();
   });
 
   it('should change search bar text when searchText changes', () => {
@@ -37,12 +30,13 @@ describe('<TableSearch />', function() {
     const onSearch = () => {};
     const onHide = () => {};
 
-    const mountWrapper = mount(
+    const { rerender } = render(
       <TableSearch onSearch={onSearch} onHide={onHide} options={options} searchText="searchText" />,
     );
-    const actualResult = mountWrapper.setProps({ searchText: 'nextText' }).update();
-    assert.strictEqual(actualResult.length, 1);
-    assert.strictEqual(actualResult.find(TextField).props().value, 'nextText');
+    expect(screen.getByDisplayValue('searchText')).toBeInTheDocument();
+
+    rerender(<TableSearch onSearch={onSearch} onHide={onHide} options={options} searchText="nextText" />);
+    expect(screen.getByDisplayValue('nextText')).toBeInTheDocument();
   });
 
   it('should render a search bar with placeholder when searchPlaceholder is set', () => {
@@ -50,45 +44,39 @@ describe('<TableSearch />', function() {
     const onSearch = () => {};
     const onHide = () => {};
 
-    const mountWrapper = mount(<TableSearch onSearch={onSearch} onHide={onHide} options={options} />);
-    const actualResult = mountWrapper.find(TextField);
-    assert.strictEqual(actualResult.length, 1);
-    assert.strictEqual(actualResult.props().placeholder, 'TestingPlaceholder');
+    render(<TableSearch onSearch={onSearch} onHide={onHide} options={options} />);
+    expect(screen.getByPlaceholderText('TestingPlaceholder')).toBeInTheDocument();
   });
 
   it('should trigger handleTextChange prop callback when calling method handleTextChange', () => {
     const options = { onSearchChange: () => true, textLabels: getTextLabels() };
-    const onSearch = spy();
+    const onSearch = jest.fn();
     const onHide = () => {};
 
-    const wrapper = mount(<TableSearch onSearch={onSearch} onHide={onHide} options={options} />);
+    render(<TableSearch onSearch={onSearch} onHide={onHide} options={options} />);
 
-    wrapper
-      .find('input')
-      .at(0)
-      .simulate('change', { target: { value: '' } });
-    wrapper.unmount();
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'test' } });
 
-    assert.strictEqual(onSearch.callCount, 1);
+    expect(onSearch).toHaveBeenCalled();
   });
 
   it('should hide the search bar when hitting the ESCAPE key', () => {
     const options = { textLabels: getTextLabels() };
-    const onHide = spy();
+    const onHide = jest.fn();
 
-    const mountWrapper = mount(<TableSearch onHide={onHide} options={options} />, { attachTo: document.body });
+    render(<TableSearch onHide={onHide} options={options} />);
 
-    simulant.fire(document.body.querySelector('input'), 'keydown', { keyCode: 27 });
-    assert.strictEqual(onHide.callCount, 1);
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Escape', keyCode: 27 });
+    expect(onHide).toHaveBeenCalledTimes(1);
   });
 
   it('should hide not hide search bar when entering anything but the ESCAPE key', () => {
     const options = { textLabels: getTextLabels() };
-    const onHide = spy();
+    const onHide = jest.fn();
 
-    const mountWrapper = mount(<TableSearch onHide={onHide} options={options} />, { attachTo: document.body });
+    render(<TableSearch onHide={onHide} options={options} />);
 
-    simulant.fire(document.body.querySelector('input'), 'keydown', { keyCode: 25 });
-    assert.strictEqual(onHide.callCount, 0);
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter', keyCode: 13 });
+    expect(onHide).toHaveBeenCalledTimes(0);
   });
 });

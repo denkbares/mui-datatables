@@ -1,15 +1,12 @@
 import React from 'react';
-import { spy, stub } from 'sinon';
-import { mount, shallow } from 'enzyme';
-import { assert, expect, should } from 'chai';
+import { render, screen, fireEvent } from '@testing-library/react';
 import MUIDataTable from '../src/MUIDataTable';
-import TableBodyCell from '../src/components/TableBodyCell';
 
 describe('<TableBodyCell />', function() {
   let data;
   let columns;
 
-  before(() => {
+  beforeEach(() => {
     columns = [
       {
         name: 'Name',
@@ -31,44 +28,23 @@ describe('<TableBodyCell />', function() {
   });
 
   it('should execute "onCellClick" prop when clicked if provided', () => {
-    var clickCount = 0;
-    var colIndex, rowIndex, colData;
+    const onCellClick = jest.fn();
     const options = {
-      onCellClick: (val, colMeta) => {
-        clickCount++;
-        colIndex = colMeta.colIndex;
-        rowIndex = colMeta.rowIndex;
-        colData = val;
-      },
+      onCellClick: onCellClick,
     };
 
-    const fullWrapper = mount(<MUIDataTable columns={columns} data={data} options={options} />);
+    render(<MUIDataTable columns={columns} data={data} options={options} />);
 
-    fullWrapper
-      .find('[data-testid="MuiDataTableBodyCell-0-0"]')
-      .at(0)
-      .simulate('click');
-    assert.strictEqual(clickCount, 1);
-    assert.strictEqual(colIndex, 0);
-    assert.strictEqual(rowIndex, 0);
-    assert.strictEqual(colData, 'Joe James');
+    fireEvent.click(screen.getByTestId('MuiDataTableBodyCell-0-0'));
+    expect(onCellClick).toHaveBeenCalledTimes(1);
+    expect(onCellClick).toHaveBeenCalledWith('Joe James', expect.objectContaining({ colIndex: 0, rowIndex: 0 }));
 
-    fullWrapper
-      .find('[data-testid="MuiDataTableBodyCell-2-3"]')
-      .at(0)
-      .simulate('click');
-    assert.strictEqual(clickCount, 2);
-    assert.strictEqual(colIndex, 2);
-    assert.strictEqual(rowIndex, 3);
-    assert.strictEqual(colData, 'Dallas');
+    fireEvent.click(screen.getByTestId('MuiDataTableBodyCell-2-3'));
+    expect(onCellClick).toHaveBeenCalledTimes(2);
+    expect(onCellClick).toHaveBeenCalledWith('Dallas', expect.objectContaining({ colIndex: 2, rowIndex: 3 }));
 
-    fullWrapper
-      .find('[data-testid="MuiDataTableBodyCell-1-2"]')
-      .at(0)
-      .simulate('click');
-    assert.strictEqual(clickCount, 3);
-    assert.strictEqual(colIndex, 1);
-    assert.strictEqual(rowIndex, 2);
-    assert.strictEqual(colData, 'Test Corp X');
+    fireEvent.click(screen.getByTestId('MuiDataTableBodyCell-1-2'));
+    expect(onCellClick).toHaveBeenCalledTimes(3);
+    expect(onCellClick).toHaveBeenCalledWith('Test Corp X', expect.objectContaining({ colIndex: 1, rowIndex: 2 }));
   });
 });

@@ -108,7 +108,7 @@ const STP = {
   REPLACE: 'replace',
   ABOVE: 'above',
   NONE: 'none',
-  ALWAYS: 'always'
+  ALWAYS: 'always',
 };
 
 class MUIDataTable extends React.Component {
@@ -953,7 +953,6 @@ class MUIDataTable extends React.Component {
     let displayRow = [];
     const { customSearch } = props.options;
 
-
     for (let index = 0; index < row.length; index++) {
       let columnDisplay = row[index];
       let columnValue = row[index];
@@ -1004,7 +1003,11 @@ class MUIDataTable extends React.Component {
       if (filterVal.length || filterType === 'custom') {
         if (column.filterOptions && column.filterOptions.logic) {
           if (column.filterOptions.logic(columnValue, filterVal, row)) isFiltered = true;
-        } else if (!customSearch && filterType === 'textField' && !this.hasSearchText(columnVal, filterVal, caseSensitive)) {
+        } else if (
+          !customSearch &&
+          filterType === 'textField' &&
+          !this.hasSearchText(columnVal, filterVal, caseSensitive)
+        ) {
           isFiltered = true;
         } else if (
           filterType !== 'textField' &&
@@ -1034,7 +1037,8 @@ class MUIDataTable extends React.Component {
         }
       }
 
-      if (!customSearch &&
+      if (
+        !customSearch &&
         searchText &&
         column.display !== 'excluded' &&
         this.hasSearchText(columnVal, searchText, caseSensitive) &&
@@ -1044,7 +1048,6 @@ class MUIDataTable extends React.Component {
         isSearchFound = true;
       }
     }
-
 
     if (searchText && customSearch) {
       const customSearchResult = customSearch(searchText, row, columns);
@@ -1060,11 +1063,11 @@ class MUIDataTable extends React.Component {
         console.warn('Server-side filtering is enabled, hence custom search will be ignored.');
       }
 
-      return {displayRow, visible: true};
+      return { displayRow, visible: true };
     }
 
-    if (isFiltered || (searchText && !isSearchFound)) return {displayRow, visible: false};
-    else return {displayRow, visible: true};
+    if (isFiltered || (searchText && !isSearchFound)) return { displayRow, visible: false };
+    else return { displayRow, visible: true };
   }
 
   hasSearchText = (toSearch, toFind, caseSensitive) => {
@@ -1145,7 +1148,7 @@ class MUIDataTable extends React.Component {
 
     for (let index = 0; index < data.length; index++) {
       const value = data[index].data;
-      const {displayRow, visible} = this.computeDisplayRow(
+      const { displayRow, visible } = this.computeDisplayRow(
         columns,
         value,
         index,
@@ -1172,7 +1175,11 @@ class MUIDataTable extends React.Component {
     newRows = customRowTransform?.(newRows) ?? newRows;
 
     // strip unneccessary information
-    return newRows.filter(row => row.visible).map(row => {return { data: row.data, dataIndex: row.dataIndex }});
+    return newRows
+      .filter(row => row.visible)
+      .map(row => {
+        return { data: row.data, dataIndex: row.dataIndex };
+      });
   }
 
   toggleViewColumn = index => {
@@ -1942,7 +1949,8 @@ class MUIDataTable extends React.Component {
 
     return (
       <Paper elevation={this.options.elevation} ref={this.tableContent} className={paperClasses}>
-        {(this.options.selectToolbarPlacement === STP.ALWAYS || selectedRows.data.length > 0 && this.options.selectToolbarPlacement !== STP.NONE) && (
+        {(this.options.selectToolbarPlacement === STP.ALWAYS ||
+          (selectedRows.data.length > 0 && this.options.selectToolbarPlacement !== STP.NONE)) && (
           <TableToolbarSelectComponent
             options={this.options}
             selectedRows={selectedRows}

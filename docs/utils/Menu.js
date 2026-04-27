@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/material';
+import { withStyles } from 'tss-react/mui';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -66,4 +66,4 @@ Menu.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(Menu);
+export default withStyles(Menu, styles);

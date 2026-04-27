@@ -1,19 +1,14 @@
 import React from 'react';
-import { spy, stub } from 'sinon';
-import { mount, shallow } from 'enzyme';
-import { assert } from 'chai';
+import { render, screen, fireEvent } from '@testing-library/react';
 import getTextLabels from '../src/textLabels';
 import TableHeadCell from '../src/components/TableHeadCell';
-import TableCell from '@mui/material/TableCell';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import HelpIcon from '@mui/icons-material/Help';
 import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { TestBackend } from 'react-dnd-test-backend';
 
 describe('<TableHeadCell />', function() {
   let classes;
 
-  before(() => {
+  beforeEach(() => {
     classes = {
       root: {},
     };
@@ -22,118 +17,140 @@ describe('<TableHeadCell />', function() {
   it('should add custom props to header cell if "setCellHeaderProps" provided', () => {
     const options = { sort: true, textLabels: getTextLabels() };
     const toggleSort = () => {};
-    const setCellHeaderProps = { myProp: 'test', className: 'testClass' };
-    const selectRowUpdate = stub();
-    const toggleExpandRow = () => {};
+    const setCellHeaderProps = { myprop: 'test', className: 'testClass' };
 
-    const mountWrapper = mount(
-      <DndProvider backend={HTML5Backend}>
-        <TableHeadCell
-          cellHeaderProps={setCellHeaderProps}
-          options={options}
-          sortDirection={'asc'}
-          sort={true}
-          toggleSort={toggleSort}
-          classes={classes}>
-          some content
-        </TableHeadCell>
-      </DndProvider>,
+    render(
+      <DndProvider backend={TestBackend}>
+        <table>
+          <thead>
+            <tr>
+              <TableHeadCell
+                cellHeaderProps={setCellHeaderProps}
+                options={options}
+                sortDirection={'asc'}
+                sort={true}
+                toggleSort={toggleSort}
+                classes={classes}>
+                some content
+              </TableHeadCell>
+            </tr>
+          </thead>
+        </table>
+      </DndProvider>
     );
 
-    const props = mountWrapper.find(TableCell).props();
-    const classNames = props.className.split(' ');
-    const finalClass = classNames[classNames.length - 1];
-
-    assert.strictEqual(props.myProp, 'test');
-    assert.strictEqual(finalClass, 'testClass');
+    const cell = screen.getByRole('cell');
+    expect(cell).toHaveAttribute('myprop', 'test');
+    expect(cell).toHaveClass('testClass');
   });
 
   it('should render a table head cell with sort label when options.sort = true provided', () => {
     const options = { sort: true, textLabels: getTextLabels() };
     const toggleSort = () => {};
 
-    const wrapper = mount(
-      <DndProvider backend={HTML5Backend}>
-        <TableHeadCell options={options} sortDirection={'asc'} sort={true} toggleSort={toggleSort} classes={classes}>
-          some content
-        </TableHeadCell>
-      </DndProvider>,
+    render(
+      <DndProvider backend={TestBackend}>
+        <table>
+          <thead>
+            <tr>
+              <TableHeadCell options={options} sortDirection={'asc'} sort={true} toggleSort={toggleSort} classes={classes}>
+                some content
+              </TableHeadCell>
+            </tr>
+          </thead>
+        </table>
+      </DndProvider>
     );
 
-    const actualResult = wrapper.find(TableSortLabel);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByRole('button', { name: /sort/i })).toBeInTheDocument();
   });
 
   it('should render a table head cell without sort label when options.sort = false provided', () => {
     const options = { sort: false, textLabels: getTextLabels() };
     const toggleSort = () => {};
 
-    const shallowWrapper = shallow(
-      <DndProvider backend={HTML5Backend}>
-        <TableHeadCell options={options} sortDirection={'asc'} sort={true} toggleSort={toggleSort} classes={classes}>
-          some content
-        </TableHeadCell>
-      </DndProvider>,
+    render(
+      <DndProvider backend={TestBackend}>
+        <table>
+          <thead>
+            <tr>
+              <TableHeadCell options={options} sortDirection={'asc'} sort={false} toggleSort={toggleSort} classes={classes}>
+                some content
+              </TableHeadCell>
+            </tr>
+          </thead>
+        </table>
+      </DndProvider>
     );
 
-    const actualResult = shallowWrapper.find(TableSortLabel);
-    assert.strictEqual(actualResult.length, 0);
+    expect(screen.queryByRole('button', { name: /sort/i })).not.toBeInTheDocument();
   });
 
   it('should render a table help icon when hint provided', () => {
     const options = { sort: true, textLabels: getTextLabels() };
 
-    const wrapper = mount(
-      <DndProvider backend={HTML5Backend}>
-        <TableHeadCell options={options} hint={'hint text'} classes={classes}>
-          some content
-        </TableHeadCell>
-      </DndProvider>,
+    render(
+      <DndProvider backend={TestBackend}>
+        <table>
+          <thead>
+            <tr>
+              <TableHeadCell options={options} hint={'hint text'} classes={classes}>
+                some content
+              </TableHeadCell>
+            </tr>
+          </thead>
+        </table>
+      </DndProvider>
     );
 
-    const actualResult = wrapper.find(HelpIcon);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByTestId('HelpIcon')).toBeInTheDocument();
   });
 
   it('should render a table head cell without custom tooltip when hint provided', () => {
     const options = { sort: true, textLabels: getTextLabels() };
 
-    const shallowWrapper = shallow(
-      <DndProvider backend={HTML5Backend}>
-        <TableHeadCell options={options} classes={classes}>
-          some content
-        </TableHeadCell>
-      </DndProvider>,
-    ).dive();
+    render(
+      <DndProvider backend={TestBackend}>
+        <table>
+          <thead>
+            <tr>
+              <TableHeadCell options={options} classes={classes}>
+                some content
+              </TableHeadCell>
+            </tr>
+          </thead>
+        </table>
+      </DndProvider>
+    );
 
-    const actualResult = shallowWrapper.find(HelpIcon);
-    assert.strictEqual(actualResult.length, 0);
+    expect(screen.queryByTestId('HelpIcon')).not.toBeInTheDocument();
   });
 
   it('should trigger toggleSort prop callback when calling method handleSortClick', () => {
     const options = { sort: true, textLabels: getTextLabels() };
-    const toggleSort = spy();
+    const toggleSort = jest.fn();
 
-    const wrapper = mount(
-      <DndProvider backend={HTML5Backend}>
-        <TableHeadCell
-          options={options}
-          sort={true}
-          index={0}
-          sortDirection={'asc'}
-          toggleSort={toggleSort}
-          classes={classes}>
-          some content
-        </TableHeadCell>
-      </DndProvider>,
+    render(
+      <DndProvider backend={TestBackend}>
+        <table>
+          <thead>
+            <tr>
+              <TableHeadCell
+                options={options}
+                sort={true}
+                index={0}
+                sortDirection={'asc'}
+                toggleSort={toggleSort}
+                classes={classes}>
+                some content
+              </TableHeadCell>
+            </tr>
+          </thead>
+        </table>
+      </DndProvider>
     );
 
-    const instance = wrapper
-      .find('td')
-      .at(0)
-      .childAt(0);
-    const event = { target: { value: 'All' } };
-    instance.simulate('click');
-    assert.strictEqual(toggleSort.callCount, 1);
+    fireEvent.click(screen.getByText('some content'));
+    expect(toggleSort).toHaveBeenCalledTimes(1);
   });
 });

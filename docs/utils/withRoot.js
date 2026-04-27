@@ -22,7 +22,7 @@ function withRoot(Component) {
     render() {
       // ThemeProvider makes the theme available down the React tree thanks to React context.
       return (
-        <ThemeProvider theme={this.pageContext.theme} sheetsManager={this.pageContext.sheetsManager}>
+        <ThemeProvider theme={this.pageContext.theme}>
           <Component {...this.props} />
         </ThemeProvider>
       );

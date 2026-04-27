@@ -1,17 +1,14 @@
 import React from 'react';
-import { spy } from 'sinon';
-import { mount } from 'enzyme';
-import { assert } from 'chai';
-import MuiTableFooter from '@mui/material/TableFooter';
+import { render, screen } from '@testing-library/react';
 import getTextLabels from '../src/textLabels';
 import TableFooter from '../src/components/TableFooter';
-import JumpToPage from '../src/components/JumpToPage';
 
 describe('<TableFooter />', function() {
   let options;
-  const changeRowsPerPage = spy();
-  const changePage = spy();
-  before(() => {
+  const changeRowsPerPage = jest.fn();
+  const changePage = jest.fn();
+
+  beforeEach(() => {
     options = {
       rowsPerPageOptions: [5, 10, 15],
       textLabels: getTextLabels(),
@@ -19,95 +16,94 @@ describe('<TableFooter />', function() {
   });
 
   it('should render a table footer', () => {
-    const mountWrapper = mount(
-      <TableFooter
-        options={options}
-        rowCount={100}
-        page={1}
-        rowsPerPage={10}
-        changeRowsPerPage={changeRowsPerPage}
-        changePage={changePage}
-      />,
+    render(
+      <table>
+        <TableFooter
+          options={options}
+          rowCount={100}
+          page={1}
+          rowsPerPage={10}
+          changeRowsPerPage={changeRowsPerPage}
+          changePage={changePage}
+        />
+      </table>,
     );
 
-    const actualResult = mountWrapper.find(MuiTableFooter);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByText(/11-20 of 100/i)).toBeInTheDocument();
   });
 
   it('should render a table footer with customFooter', () => {
     const customOptions = {
-      rowsPerPageOptions: [5, 10, 15],
-      textLabels: getTextLabels(),
+      ...options,
       customFooter: (rowCount, page, rowsPerPage, changeRowsPerPage, changePage, textLabels) => {
         return (
-          <MuiTableFooter
-            changePage={changePage}
-            changeRowsPerPage={changeRowsPerPage}
-            page={page}
-            rowCount={rowCount}
-            rowsPerPage={rowsPerPage}
-            labelRowsPerPage={textLabels.rowsPerPage}
-          />
+          <tfoot data-testid="custom-footer">
+            <tr>
+              <td>Custom Footer</td>
+            </tr>
+          </tfoot>
         );
       },
     };
 
-    const mountWrapper = mount(
-      <TableFooter
-        options={customOptions}
-        rowCount={100}
-        page={1}
-        rowsPerPage={10}
-        changeRowsPerPage={changeRowsPerPage}
-        changePage={changePage}
-      />,
+    render(
+      <table>
+        <TableFooter
+          options={customOptions}
+          rowCount={100}
+          page={1}
+          rowsPerPage={10}
+          changeRowsPerPage={changeRowsPerPage}
+          changePage={changePage}
+        />
+      </table>,
     );
 
-    const actualResult = mountWrapper.find(MuiTableFooter);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByTestId('custom-footer')).toBeInTheDocument();
+    expect(screen.getByText('Custom Footer')).toBeInTheDocument();
   });
 
   it('should not render a table footer', () => {
     const nonPageOption = {
-      rowsPerPageOptions: [5, 10, 15],
-      textLabels: getTextLabels(),
+      ...options,
       pagination: false,
     };
 
-    const mountWrapper = mount(
-      <TableFooter
-        options={nonPageOption}
-        rowCount={100}
-        page={1}
-        rowsPerPage={10}
-        changeRowsPerPage={changeRowsPerPage}
-        changePage={changePage}
-      />,
+    const { container } = render(
+      <table>
+        <TableFooter
+          options={nonPageOption}
+          rowCount={100}
+          page={1}
+          rowsPerPage={10}
+          changeRowsPerPage={changeRowsPerPage}
+          changePage={changePage}
+        />
+      </table>,
     );
 
-    const actualResult = mountWrapper.find(MuiTableFooter);
-    assert.strictEqual(actualResult.length, 0);
+    expect(container.querySelector('tfoot')).not.toBeInTheDocument();
   });
 
   it('should render a JumpToPage component', () => {
-    const options = {
-      rowsPerPageOptions: [5, 10, 15],
-      textLabels: getTextLabels(),
+    const optionsWithJump = {
+      ...options,
       jumpToPage: true,
     };
 
-    const mountWrapper = mount(
-      <TableFooter
-        options={options}
-        rowCount={100}
-        page={1}
-        rowsPerPage={10}
-        changeRowsPerPage={changeRowsPerPage}
-        changePage={changePage}
-      />,
+    render(
+      <table>
+        <TableFooter
+          options={optionsWithJump}
+          rowCount={100}
+          page={1}
+          rowsPerPage={10}
+          changeRowsPerPage={changeRowsPerPage}
+          changePage={changePage}
+        />
+      </table>,
     );
 
-    const actualResult = mountWrapper.find(JumpToPage);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByText(options.textLabels.pagination.jumpToPage)).toBeInTheDocument();
   });
 });

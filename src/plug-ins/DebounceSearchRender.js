@@ -80,10 +80,12 @@ class _DebounceTableSearch extends React.Component {
             variant={'standard'}
             className={classes.searchText}
             autoFocus={true}
-            InputProps={{
-              'data-test-id': options.textLabels.toolbar.search,
-              'aria-label': options.textLabels.toolbar.search,
-            }}
+            slotProps={{
+              input:{
+                'data-test-id': options.textLabels.toolbar.search,
+                'aria-label': options.textLabels.toolbar.search,
+            }
+          }}
             defaultValue={searchText}
             onChange={this.handleTextChangeWrapper(debouncedSearch)}
             fullWidth={true}

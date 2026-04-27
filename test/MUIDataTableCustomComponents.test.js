@@ -1,12 +1,10 @@
 import React from 'react';
-import { mount, shallow } from 'enzyme';
-import { assert } from 'chai';
+import { render, screen } from '@testing-library/react';
 import MUIDataTable from '../src/MUIDataTable';
-import Chip from '@mui/material/Chip';
 import TableFilterList from '../src/components/TableFilterList';
 
 const CustomChip = props => {
-  return <Chip variant="outlined" color="secondary" label={props.label} />;
+  return <div data-testid="custom-chip">{props.label}</div>;
 };
 
 const CustomFilterList = props => {
@@ -17,7 +15,7 @@ describe('<MUIDataTable /> with custom components', function() {
   let data;
   let columns;
 
-  before(() => {
+  beforeEach(() => {
     columns = [
       { name: 'Name' },
       {
@@ -41,7 +39,7 @@ describe('<MUIDataTable /> with custom components', function() {
   });
 
   it('should render a table with custom Chip in TableFilterList', () => {
-    const wrapper = mount(
+    render(
       <MUIDataTable
         columns={columns}
         data={data}
@@ -50,9 +48,7 @@ describe('<MUIDataTable /> with custom components', function() {
         }}
       />,
     );
-    const customFilterList = wrapper.find(CustomFilterList);
-    assert.lengthOf(customFilterList, 1);
-    const customChip = customFilterList.find(CustomChip);
-    assert.lengthOf(customChip, 1);
+
+    expect(screen.getByTestId('custom-chip')).toHaveTextContent('Test Corp');
   });
 });

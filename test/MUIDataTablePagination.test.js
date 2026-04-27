@@ -1,15 +1,12 @@
 import React from 'react';
-import { spy } from 'sinon';
-import { mount, shallow } from 'enzyme';
-import { assert } from 'chai';
-import MuiTablePagination from '@mui/material/TablePagination';
+import { render, screen, fireEvent } from '@testing-library/react';
 import getTextLabels from '../src/textLabels';
 import TablePagination from '../src/components/TablePagination';
 
 describe('<TablePagination />', function() {
   let options;
 
-  before(() => {
+  beforeEach(() => {
     options = {
       rowsPerPageOptions: [5, 10, 15],
       textLabels: getTextLabels(),
@@ -17,33 +14,37 @@ describe('<TablePagination />', function() {
   });
 
   it('should render a table footer with pagination', () => {
-    const mountWrapper = mount(<TablePagination options={options} count={100} page={1} rowsPerPage={10} />);
+    render(
+      <table>
+        <TablePagination options={options} count={100} page={1} rowsPerPage={10} />
+      </table>
+    );
 
-    const actualResult = mountWrapper.find(MuiTablePagination);
-    assert.strictEqual(actualResult.length, 1);
+    expect(screen.getByText(/11-20 of 100/i)).toBeInTheDocument();
   });
 
   it('should trigger changePage prop callback when page is changed', () => {
-    const changePage = spy();
-    const wrapper = mount(
-      <TablePagination options={options} count={100} page={1} rowsPerPage={10} changePage={changePage} />,
+    const changePage = jest.fn();
+    render(
+      <table>
+        <TablePagination options={options} count={100} page={1} rowsPerPage={10} changePage={changePage} />
+      </table>
     );
 
-    wrapper
-      .find('#pagination-next')
-      .at(0)
-      .simulate('click');
-    wrapper.unmount();
+    const nextButton = screen.getByLabelText(/next page/i);
+    fireEvent.click(nextButton);
 
-    assert.strictEqual(changePage.callCount, 1);
+    expect(changePage).toHaveBeenCalledTimes(1);
   });
 
   it('should correctly change page to be in bounds if out of bounds page was set', () => {
     // Set a page that is too high for the count and rowsPerPage
-    const mountWrapper = mount(<TablePagination options={options} count={5} page={1} rowsPerPage={10} />);
-    const actualResult = mountWrapper.find(MuiTablePagination).props().page;
+    render(
+      <table>
+        <TablePagination options={options} count={5} page={1} rowsPerPage={10} />
+      </table>
+    );
 
-    // material-ui v3 does some internal calculations to protect against out of bounds pages, but material v4 does not
-    assert.strictEqual(actualResult, 0);
+    expect(screen.getByText(/1-5 of 5/i)).toBeInTheDocument();
   });
 });

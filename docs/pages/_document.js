@@ -1,6 +1,6 @@
 import React from 'react';
 import Document, { Head, Main, NextScript } from 'next/document';
-import JssProvider from 'react-jss/lib/JssProvider';
+import { JssProvider } from 'react-jss';
 import getPageContext from '../utils/getPageContext';
 
 class MyDocument extends Document {
@@ -75,8 +75,9 @@ class MyDocument extends Document {
   }
 }
 
-MyDocument.getInitialProps = ctx => {
+MyDocument.getInitialProps = async ctx => {
   const pageContext = getPageContext();
+  const initialProps = await Document.getInitialProps(ctx);
   const page = ctx.renderPage(Component => props => (
     <JssProvider registry={pageContext.sheetsRegistry} generateClassName={pageContext.generateClassName}>
       <Component pageContext={pageContext} {...props} />
@@ -84,14 +85,18 @@ MyDocument.getInitialProps = ctx => {
   ));
 
   return {
+    ...initialProps,
     ...page,
     pageContext,
     styles: (
-      <style
-        id="jss-server-side"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: pageContext.sheetsRegistry.toString() }}
-      />
+      <React.Fragment>
+        {initialProps.styles}
+        <style
+          id="jss-server-side"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: pageContext.sheetsRegistry.toString() }}
+        />
+      </React.Fragment>
     ),
   };
 };

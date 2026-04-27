@@ -1,9 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 
 import { SheetsRegistry } from 'jss';
-import { createTheme, createGenerateClassName } from '@mui/material/styles';
-import purple from '@mui/material/colors/purple';
-import green from '@mui/material/colors/green';
+import { createTheme } from '@mui/material/styles';
+import { createGenerateClassName } from '@mui/styles';
+import { purple } from '@mui/material/colors';
+import { green } from '@mui/material/colors';
 
 // A theme with custom primary and secondary color.
 // It's optional.

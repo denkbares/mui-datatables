@@ -13,10 +13,10 @@ import { withStyles } from 'tss-react/mui';
 const styles = theme => ({
   stepIcon: {
     fontSize: '30px',
-    marginRight: theme.spacing.unit * 2,
+    marginRight: theme.spacing(2),
   },
   stepWrapper: {
-    marginTop: theme.spacing.unit * 4,
+    marginTop: theme.spacing(4),
     display: 'flex',
     alignItems: 'center',
   },

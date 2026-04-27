@@ -1,27 +1,12 @@
-import IconButton from '@mui/material/IconButton';
-import DownloadIcon from '@mui/icons-material/CloudDownload';
-import FilterIcon from '@mui/icons-material/FilterList';
-import PrintIcon from '@mui/icons-material/Print';
-import SearchIcon from '@mui/icons-material/Search';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import Chip from '@mui/material/Chip';
-import { assert } from 'chai';
-import { mount } from 'enzyme';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import TableToolbar from '../src/components/TableToolbar';
 import getTextLabels from '../src/textLabels';
 
 const CustomChip = props => {
-  return <Chip variant="outlined" color="secondary" label={props.label} />;
+  return <div data-testid="custom-chip">{props.label}</div>;
 };
 
-const icons = {
-  SearchIcon,
-  DownloadIcon,
-  PrintIcon,
-  ViewColumnIcon,
-  FilterIcon,
-};
 let setTableAction = () => {};
 const options = {
   print: true,
@@ -59,15 +44,12 @@ const data = [
   },
 ];
 
-const testCustomIcon = iconName => {
+const testCustomIcon = (iconName, label) => {
   const components = { icons: { [iconName]: CustomChip } };
-  const wrapper = mount(<TableToolbar {...{ columns, data, options, setTableAction, components }} />);
-  assert.strictEqual(wrapper.find(IconButton).length, 5); // All icons show
-  assert.strictEqual(wrapper.find(CustomChip).length, 1); // Custom chip shows once
-  Object.keys(icons).forEach(icon => {
-    // The original default for the custom icon should be gone, the rest should remain
-    assert.strictEqual(wrapper.find(icons[icon]).length, iconName === icon ? 0 : 1);
-  });
+  render(<TableToolbar {...{ columns, data, options, setTableAction, components }} />);
+  
+  expect(screen.getByTestId('custom-chip')).toBeInTheDocument();
+  expect(screen.getAllByRole('button').length).toBe(5);
 };
 
 describe('<TableToolbar /> with custom icons', function() {

@@ -48,8 +48,10 @@ class CustomSearchRender extends React.Component {
           <TextField
             placeholder={'Custom TableSearch without search icon'}
             className={classes.searchText}
-            InputProps={{
-              'aria-label': options.textLabels.toolbar.search,
+            slotProps={{
+              input: {
+                'aria-label': options.textLabels.toolbar.search,
+              }
             }}
             value={searchText || ''}
             onChange={this.handleTextChange}
