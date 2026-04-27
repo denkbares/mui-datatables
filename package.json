@@ -1,8 +1,16 @@
 {
-  "name": "mui-datatables",
-  "version": "4.4.0",
+  "name": "@des/mui-datatables",
+  "version": "4.4.1",
   "description": "Datatables for React using Material-UI",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -18,7 +26,7 @@
     "coverage:html": "cross-env NODE_ENV=test nyc check-coverage --lines 55 --reporter=html --reporter=text jest && nyc report --reporter=html",
     "prettier": "find src/ docs/ test/ -type f -name \"*.js\" ! -path \"*/.next/*\" | xargs prettier --write",
     "lint": "eslint src",
-    "build": "NODE_ENV=production node ./node_modules/rollup/dist/bin/rollup -c",
+    "build": "NODE_ENV=production rollup -c",
     "prepare": "npm run build"
   },
   "repository": {
@@ -140,7 +148,6 @@
     "react-to-print": "^2.8.0",
     "tss-react": "^3.6.0"
   },
-  "side-effects": false,
   "nyc": {
     "lines": 50,
     "statements": 50,
@@ -157,5 +164,5 @@
     "sourceMap": false,
     "instrument": false
   },
-  "module": "dist/index.js"
+  "sideEffects": false
 }

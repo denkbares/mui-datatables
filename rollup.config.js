@@ -53,10 +53,17 @@ export default {
       },
     }),
   ],
-  output: {
-    file: 'dist/index.js',
-    format: 'cjs',
-    exports: 'named',
-    sourcemap: true,
-  },
+  output: [
+    {
+      file: 'dist/index.js',
+      format: 'cjs',
+      exports: 'named',
+      sourcemap: true,
+    },
+    {
+      file: 'dist/index.mjs',
+      format: 'esm',
+      sourcemap: true,
+    },
+  ],
 };
